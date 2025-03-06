@@ -126,6 +126,7 @@ type FuturesAlgoOrderStatusType string
 var (
 	BaseAPIMainURL    = "https://api.binance.com"
 	BaseAPITestnetURL = "https://testnet.binance.vision"
+	BaseAPIMainURLUS  = "https://api.binance.us"
 )
 
 // SelfTradePreventionMode define self trade prevention strategy
@@ -135,6 +136,12 @@ type MarginAccountBorrowRepayType string
 
 // UseTestnet switch all the API endpoints from production to the testnet
 var UseTestnet = false
+
+var (
+	MainNet = 0
+	Testnet = 1
+	USNet   = 2
+)
 
 // Global enums
 const (
@@ -350,22 +357,26 @@ func newJSON(data []byte) (j *simplejson.Json, err error) {
 }
 
 // getAPIEndpoint return the base endpoint of the Rest API according the UseTestnet flag
-func getAPIEndpoint() string {
-	if UseTestnet {
+func getAPIEndpoint(useNet int) string {
+	switch useNet {
+	case Testnet:
 		return BaseAPITestnetURL
+	case USNet:
+		return BaseAPIMainURLUS
+	default:
+		return BaseAPIMainURL
 	}
-	return BaseAPIMainURL
 }
 
 // NewClient initialize an API client instance with API key and secret key.
 // You should always call this function before using this SDK.
 // Services will be created by the form client.NewXXXService().
-func NewClient(apiKey, secretKey string) *Client {
+func NewClient(apiKey, secretKey string, useNet int) *Client {
 	return &Client{
 		APIKey:     apiKey,
 		SecretKey:  secretKey,
 		KeyType:    common.KeyTypeHmac,
-		BaseURL:    getAPIEndpoint(),
+		BaseURL:    getAPIEndpoint(useNet),
 		UserAgent:  "Binance/golang",
 		HTTPClient: http.DefaultClient,
 		Logger:     log.New(os.Stderr, "Binance-golang ", log.LstdFlags),
@@ -373,7 +384,7 @@ func NewClient(apiKey, secretKey string) *Client {
 }
 
 // NewProxiedClient passing a proxy url
-func NewProxiedClient(apiKey, secretKey, proxyUrl string) *Client {
+func NewProxiedClient(apiKey, secretKey, proxyUrl string, useNet int) *Client {
 	proxy, err := url.Parse(proxyUrl)
 	if err != nil {
 		log.Fatal(err)
@@ -386,7 +397,7 @@ func NewProxiedClient(apiKey, secretKey, proxyUrl string) *Client {
 		APIKey:    apiKey,
 		SecretKey: secretKey,
 		KeyType:   common.KeyTypeHmac,
-		BaseURL:   getAPIEndpoint(),
+		BaseURL:   getAPIEndpoint(useNet),
 		UserAgent: "Binance/golang",
 		HTTPClient: &http.Client{
 			Transport: tr,
