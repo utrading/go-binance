@@ -10,7 +10,7 @@ import (
 func Ticker() {
 	apiKey := ""
 	secret := ""
-	client := binance.NewClient(apiKey, secret)
+	client := binance.NewClient(apiKey, secret, 0)
 
 	// spot ticker
 	ticker, err := client.NewTradingDayTickerService().Symbol("BTCUSDT").Do(context.Background())

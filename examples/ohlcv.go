@@ -10,7 +10,7 @@ import (
 func Ohlcv() {
 	apiKey := ""
 	secret := ""
-	client := binance.NewClient(apiKey, secret)
+	client := binance.NewClient(apiKey, secret, 0)
 
 	// spot ohlcv
 	ohlcv, err := client.NewKlinesService().Symbol("BTCUSDT").Interval("1m").Limit(5).Do(context.Background())
